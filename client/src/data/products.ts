@@ -1,11 +1,11 @@
 // ── Centralized shop image assets ─────────────────────────────────────────
-export const IMG_SHOP_HERO = "/src/assets/danny-greenberg.jpg";
+export const IMG_SHOP_HERO = "/assets/danny-greenberg.jpg";
 
 export const PRODUCT_IMGS = [
-  "/src/assets/SUPERSTARS.jpg",
-  "/src/assets/jordans.jpg",
-  "/src/assets/air 1.jpg",
-  "/src/assets/watches.jpg",
+  "/assets/SUPERSTARS.jpg",
+  "/assets/jordans.jpg",
+  "/assets/air 1.jpg",
+  "/assets/watches.jpg",
   "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=70",
   "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=70",
 ];

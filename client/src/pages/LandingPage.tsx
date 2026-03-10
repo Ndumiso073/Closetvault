@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 
-const IMG_HERO    = "/src/assets/cool-sunny.jpg";
-const IMG_STREET1 = "/src/assets/SUPERSTARS.jpg";
-const IMG_STREET2 = "/src/assets/jordans.jpg";
+const IMG_HERO    = "/assets/cool-sunny.jpg";
+const IMG_STREET1 = "/assets/SUPERSTARS.jpg";
+const IMG_STREET2 = "/assets/jordans.jpg";
 const IMG_KICKS   = "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&q=80";
-const IMG_VAULT   = "/src/assets/air 1.jpg";
-const IMG_CLOSET  = "/src/assets/watches.jpg";
+const IMG_VAULT   = "/assets/air 1.jpg";
+const IMG_CLOSET  = "/assets/watches.jpg";
 
 export default function LandingPage() {
   return (

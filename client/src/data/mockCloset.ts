@@ -4,7 +4,7 @@ export const mockCloset: ClosetItem[] = [
   {
     id: "c1",
     title: "Black Tech Hoodie",
-    queryImageUrl: "/src/assets/supreme-viewed.jpg",
+    queryImageUrl: "/assets/supreme-viewed.jpg",
     createdAt: "2026-02-26",
     notes: "Watch for price drop before end of month.",
     sources: [
@@ -36,7 +36,7 @@ export const mockCloset: ClosetItem[] = [
   {
     id: "c2",
     title: "White Sneakers",
-    queryImageUrl: "/src/assets/nice-airforce1.jpg",
+    queryImageUrl: "/assets/nice-airforce1.jpg",
     createdAt: "2026-02-20",
     sources: [
       {

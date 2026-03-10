@@ -15,7 +15,7 @@ const FEATURED_DROPS = [
     brand: "Jordan Brand",
     price: 420,
     retailPrice: 210,
-    img: "/src/assets/imgi_20_JORDAN+1+RETRO+HIGH+OG+(PS) (1).png",
+    img: "/assets/imgi_20_JORDAN+1+RETRO+HIGH+OG+(PS) (1).png",
     status: "live",
     endsAt: now + 2 * h + 34 * m + 12000,
     tag: "LIVE NOW",
@@ -30,7 +30,7 @@ const FEATURED_DROPS = [
     brand: "Adidas",
     price: 380,
     retailPrice: 300,
-    img: "/src/assets/imgi_73_WMNS+NIKE+AIR+MAX+MUSE+VC.png",
+    img: "/assets/imgi_73_WMNS+NIKE+AIR+MAX+MUSE+VC.png",
     status: "upcoming",
     endsAt: now + 18 * h + 5 * m,
     tag: "DROPPING SOON",
@@ -45,7 +45,7 @@ const FEATURED_DROPS = [
     brand: "Nike",
     price: 130,
     retailPrice: 110,
-    img: "/src/assets/imgi_9_W+NIKE+MIND+001.png",
+    img: "/assets/imgi_9_W+NIKE+MIND+001.png",
     status: "upcoming",
     endsAt: now + 3 * 24 * h + 11 * h,
     tag: "3 DAYS",
@@ -63,12 +63,12 @@ const NEW_ARRIVALS = PRODUCTS.slice(0, 8).map((p, i) => ({
 }));
 
 const FEATURED_BRANDS = [
-  { name: "Nike",        slug: "nike",    drops: 12, img: "/src/assets/nice-airforce1.jpg" },
-  { name: "Jordan",      slug: "jordan",  drops: 8,  img: "/src/assets/Jordann.jpg" },
-  { name: "Adidas",      slug: "adidas",  drops: 6,  img: "/src/assets/SUPERSTARS.jpg" },
-  { name: "New Balance", slug: "nb",      drops: 5,  img: "/src/assets/tuananh-blue-qCKCQocNXlo-unsplash.jpg" },
-  { name: "Yeezy",       slug: "yeezy",   drops: 4,  img: "/src/assets/tuananh-blue-HkII6Il2_FE-unsplash.jpg" },
-  { name: "Supreme",     slug: "supreme", drops: 3,  img: "/src/assets/supreme-viewed.jpg" },
+  { name: "Nike",        slug: "nike",    drops: 12, img: "/assets/nice-airforce1.jpg" },
+  { name: "Jordan",      slug: "jordan",  drops: 8,  img: "/assets/Jordann.jpg" },
+  { name: "Adidas",      slug: "adidas",  drops: 6,  img: "/assets/SUPERSTARS.jpg" },
+  { name: "New Balance", slug: "nb",      drops: 5,  img: "/assets/tuananh-blue-qCKCQocNXlo-unsplash.jpg" },
+  { name: "Yeezy",       slug: "yeezy",   drops: 4,  img: "/assets/tuananh-blue-HkII6Il2_FE-unsplash.jpg" },
+  { name: "Supreme",     slug: "supreme", drops: 3,  img: "/assets/supreme-viewed.jpg" },
 ];
 
 // ── Countdown hook ────────────────────────────────────────────────────────
@@ -164,7 +164,7 @@ export default function LaunchesPage() {
         }
         .drops-hero-bg {
           position: absolute; inset: 0;
-          background-image: url('/src/assets/redd-francisco-MqaUWQoXgbc-unsplash.jpg');
+          background-image: url('/assets/redd-francisco-MqaUWQoXgbc-unsplash.jpg');
           background-size: cover; background-position: center;
           filter: brightness(.18) saturate(.5);
         }

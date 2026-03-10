@@ -286,7 +286,7 @@ export function AuthLeft({ mode }: { mode: "login" | "register" }) {
     <div className="auth-left">
       <div
         className="auth-left-bg"
-        style={{ backgroundImage: "url('/src/assets/cool-sunny.jpg')" }}
+        style={{ backgroundImage: "url('/assets/cool-sunny.jpg')" }}
       />
       <div className="auth-left-gradient" />
       <div className="auth-left-scan" />
