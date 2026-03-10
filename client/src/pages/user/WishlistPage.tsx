@@ -137,14 +137,14 @@ export default function WishlistPage() {
           color: var(--white);
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          padding: 9px 14px; cursor: pointer; outline: none; appearance: none;
-          transition: border-color .2s;
+          padding: 12px 14px; cursor: pointer; outline: none; appearance: none;
+          transition: border-color .2s; height: 44px;
         }
         .wl-sort:focus { border-color: var(--accent); }
 
         .wl-view-btns { display: flex; gap: 4px; }
         .wl-view-btn {
-          width: 34px; height: 34px;
+          width: 44px; height: 44px;
           background: var(--gray); border: 1px solid rgba(255,255,255,.1);
           color: var(--dim); cursor: pointer;
           display: flex; align-items: center; justify-content: center;
@@ -214,8 +214,12 @@ export default function WishlistPage() {
           transition: opacity .25s, transform .25s;
         }
         .wl-card:hover .wl-card-actions { opacity: 1; transform: translateX(0); }
+        /* always show actions on touch devices */
+        @media (hover: none) {
+          .wl-card-actions { opacity: 1; transform: translateX(0); }
+        }
         .wl-action-btn {
-          width: 30px; height: 30px;
+          width: 44px; height: 44px;
           background: rgba(10,10,10,.82); border: 1px solid rgba(255,255,255,.12);
           color: var(--dim); cursor: pointer;
           display: flex; align-items: center; justify-content: center;
@@ -264,7 +268,7 @@ export default function WishlistPage() {
         .wl-add-btn {
           display: flex; align-items: center; justify-content: center; gap: 5px;
           background: var(--accent); color: var(--white);
-          border: none; padding: 7px 12px; cursor: pointer;
+          border: none; padding: 11px 12px; cursor: pointer;
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
           clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);

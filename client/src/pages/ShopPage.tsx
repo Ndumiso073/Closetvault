@@ -286,8 +286,8 @@ export default function ShopPage() {
         }
         @media (min-width: 768px)  { .shop-toolbar { padding: 14px var(--side-pad-tablet); } }
         @media (min-width: 1024px) { .shop-toolbar { padding: 14px var(--side-pad-desktop); } }
-        .toolbar-left  { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-        .toolbar-right { display: flex; align-items: center; gap: 10px; }
+        .toolbar-left  { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex: 1; min-width: 0; }
+        .toolbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 
         /* search */
         .tb-search {
@@ -343,6 +343,12 @@ export default function ShopPage() {
           display: flex; align-items: center; gap: 10px;
           min-width: 180px; justify-content: space-between;
           transition: border-color .2s;
+        }
+        @media (max-width: 600px) {
+          .tb-sort-btn { min-width: 0; }
+          .tb-sort-label { display: none; }
+          .tb-btn { padding: 8px 12px; }
+          .tb-search { min-width: 0; flex: 1; }
         }
         .tb-sort-btn:hover { border-color: rgba(255,255,255,.2); }
         .tb-sort-dropdown {
@@ -745,7 +751,7 @@ export default function ShopPage() {
             {/* sort */}
             <div className="tb-sort">
               <button className="tb-sort-btn" onClick={() => setSortOpen(o => !o)}>
-                {SORT_OPTIONS[sortBy as keyof typeof SORT_OPTIONS]}
+                <span className="tb-sort-label">{SORT_OPTIONS[sortBy as keyof typeof SORT_OPTIONS]}</span>
                 <ChevronDown size={13} style={{ transform: sortOpen ? "rotate(180deg)" : "", transition: "transform .2s" }} />
               </button>
               {sortOpen && (

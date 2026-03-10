@@ -173,7 +173,7 @@ export default function CartPage() {
           display: flex; align-items: center; justify-content: center; gap: 6px;
         }
         .qty-btn {
-          width: 28px; height: 28px; background: var(--mid);
+          width: 44px; height: 44px; background: var(--mid);
           border: 1px solid rgba(255,255,255,.1);
           color: var(--dim); cursor: pointer;
           display: flex; align-items: center; justify-content: center;
@@ -199,7 +199,7 @@ export default function CartPage() {
           background: transparent; border: none; cursor: pointer;
           color: rgba(255,255,255,.2); transition: color .2s;
           display: flex; align-items: center; justify-content: center;
-          padding: 4px;
+          padding: 12px; min-width: 44px; min-height: 44px;
         }
         .ci-remove:hover { color: var(--accent); }
 
@@ -254,8 +254,12 @@ export default function CartPage() {
         .cart-summary {
           background: var(--gray);
           border: 1px solid rgba(255,255,255,.07);
-          position: sticky;
-          top: calc(var(--nav-h, 64px) + 16px);
+        }
+        @media (min-width: 1024px) {
+          .cart-summary {
+            position: sticky;
+            top: calc(var(--nav-h, 64px) + 16px);
+          }
         }
         .cs-header {
           padding: 20px 22px 16px;

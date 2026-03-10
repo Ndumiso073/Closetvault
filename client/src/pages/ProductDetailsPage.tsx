@@ -143,6 +143,10 @@ export default function ProductDetailsPage() {
           position: sticky;
           top: calc(var(--nav-h, 64px) + 16px);
         }
+        @media (max-width: 899px) {
+          /* no sticky on single-column layout */
+          .pd-gallery { position: static; }
+        }
         @media (max-width: 599px) {
           .pd-gallery {
             grid-template-columns: 1fr;
@@ -201,7 +205,7 @@ export default function ProductDetailsPage() {
         .pd-share {
           position: absolute; top: 12px; right: 12px; z-index: 2;
           background: rgba(10,10,10,.68); border: 1px solid rgba(255,255,255,.1);
-          width: 34px; height: 34px; border-radius: 0;
+          width: 44px; height: 44px; border-radius: 0;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer; color: var(--dim);
           transition: background .2s, color .2s;
@@ -303,7 +307,8 @@ export default function ProductDetailsPage() {
           font-size: 12px; font-weight: 700; letter-spacing: 1px;
           background: var(--mid); color: var(--dim);
           border: 1px solid rgba(255,255,255,.08);
-          padding: 8px 13px; cursor: pointer; min-width: 46px; text-align: center;
+          padding: 12px 13px; cursor: pointer; min-width: 46px; min-height: 44px;
+          text-align: center;
           clip-path: polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
           transition: all .15s;
         }
@@ -324,7 +329,12 @@ export default function ProductDetailsPage() {
         }
 
         /* ACTIONS */
-        .pd-actions { display: flex; gap: 8px; margin-top: 16px; margin-bottom: 24px; }
+        .pd-actions { display: flex; gap: 8px; margin-top: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+        .pd-actions .pd-btn-cart { min-width: 140px; }
+        @media (max-width: 480px) {
+          .pd-actions { flex-direction: column; }
+          .pd-actions .pd-btn-save { justify-content: center; }
+        }
         .pd-btn-cart {
           flex: 1; font-family: 'Barlow Condensed', sans-serif;
           font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
@@ -410,15 +420,15 @@ export default function ProductDetailsPage() {
         /* TABS (description / shipping / returns) */
         .pd-tabs {
           display: flex; border-bottom: 1px solid rgba(255,255,255,.07);
-          margin-bottom: 16px;
+          margin-bottom: 16px; overflow-x: auto;
         }
         .pd-tab {
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          color: var(--dim); padding: 10px 16px; cursor: pointer;
+          color: var(--dim); padding: 12px 14px; cursor: pointer;
           border-bottom: 2px solid transparent; margin-bottom: -1px;
           transition: all .2s; background: transparent; border-top: none;
-          border-left: none; border-right: none;
+          border-left: none; border-right: none; white-space: nowrap; flex-shrink: 0;
         }
         .pd-tab:hover { color: var(--white); }
         .pd-tab.on { color: var(--white); border-bottom-color: var(--accent); }

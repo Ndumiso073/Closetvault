@@ -246,6 +246,10 @@ export default function CheckoutPage() {
           transition: all .2s; white-space: nowrap;
           position: relative;
         }
+        @media (max-width: 480px) {
+          .co-step-label { display: none; }
+          .co-step { padding: 12px 8px; gap: 6px; }
+        }
         .co-step:last-child { border-right: none; }
         .co-step.done {
           color: var(--white); cursor: pointer;
@@ -456,7 +460,9 @@ export default function CheckoutPage() {
         /* ── ORDER SUMMARY PANEL ── */
         .co-summary {
           background: var(--gray); border: 1px solid rgba(255,255,255,.07);
-          position: sticky; top: calc(var(--nav-h, 64px) + 16px);
+        }
+        @media (min-width: 1024px) {
+          .co-summary { position: sticky; top: calc(var(--nav-h, 64px) + 16px); }
         }
         .cs-hdr {
           padding: 18px 20px 14px;
@@ -564,7 +570,7 @@ export default function CheckoutPage() {
                 {curIdx > i ? <Check size={10} /> : i + 1}
               </div>
               {s.icon}
-              {s.label}
+              <span className="co-step-label">{s.label}</span>
             </div>
           ))}
         </div>

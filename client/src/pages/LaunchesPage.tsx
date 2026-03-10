@@ -193,7 +193,7 @@ export default function LaunchesPage() {
         }
         .drops-hero-title {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: clamp(64px, 9vw, 120px);
+          font-size: clamp(44px, 9vw, 120px);
           letter-spacing: -2px; line-height: .88;
           color: var(--white); margin-bottom: 16px;
         }
@@ -309,7 +309,7 @@ export default function LaunchesPage() {
         .drop-notify-btn {
           display: flex; align-items: center; gap: 6px;
           background: rgba(10,10,10,.82); border: 1px solid rgba(255,255,255,.2);
-          color: var(--white); cursor: pointer; padding: 7px 12px;
+          color: var(--white); cursor: pointer; padding: 11px 14px; min-height: 44px;
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
           backdrop-filter: blur(6px); transition: all .2s;
