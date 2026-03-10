@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  User, Mail, Lock, MapPin, Ruler, Bell, Shield,
+  User, Lock, MapPin, Ruler, Bell, Shield,
   Check, AlertCircle, Eye, EyeOff, Trash2, Plus,
   Camera, ChevronRight, Package, Heart, Archive,
   LogOut, CreditCard
@@ -813,7 +813,7 @@ export default function ProfilePage() {
                       </div>
                     )}
                     <div style={{ maxWidth: 420 }}>
-                      {(["current","next","confirm"] as const).map((k, i) => {
+                      {(["current","next","confirm"] as const).map((k) => {
                         const labels = { current: "Current Password", next: "New Password", confirm: "Confirm New Password" };
                         const showKey = k === "current" ? "c" : k === "next" ? "n" : "cf";
                         return (

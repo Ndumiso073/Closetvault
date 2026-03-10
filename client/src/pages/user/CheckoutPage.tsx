@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ShoppingBag, ChevronRight, Shield, Truck, RotateCcw,
+  ChevronRight, Truck,
   Check, CreditCard, MapPin, Package, ChevronDown, Lock
 } from "lucide-react";
 import { PRODUCTS } from "../../data/products";

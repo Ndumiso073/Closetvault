@@ -1,7 +1,7 @@
 import type { Brand, ClosetItem, ItemSource, ScanResult } from "../types";
 
 const KEY = "closetVault:closetItems";
-const DEMO_USER_ID = "demo-user-1";
+const _DEMO_USER_ID = "demo-user-1"; void _DEMO_USER_ID;
 
 function safeParse<T>(value: string | null, fallback: T): T {
   if (!value) return fallback;

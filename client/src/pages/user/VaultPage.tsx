@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Heart, ShoppingBag, Trash2, Grid3X3, LayoutList,
-  Clock, Star, Lock, Plus, ChevronRight, Archive,
+  Clock, Plus, ChevronRight, Archive,
   TrendingUp, Eye
 } from "lucide-react";
 import { PRODUCTS } from "../../data/products";

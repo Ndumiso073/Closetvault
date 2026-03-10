@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Package, ChevronRight, ChevronDown, Search, Filter,
+  ChevronDown, Search,
   Truck, Check, Clock, X, RotateCcw, Download,
   ShoppingBag, Star, AlertCircle, MapPin, Receipt
 } from "lucide-react";
@@ -78,7 +78,7 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; bg: str
   returned:   { label: "Returned",   color: "#a855f7", bg: "rgba(168,85,247,.08)",   border: "rgba(168,85,247,.25)",   icon: <RotateCcw size={11} /> },
 };
 
-const FILTER_OPTIONS = ["All", "Delivered", "Shipped", "Processing", "Cancelled", "Returned"];
+const FILTER_OPTIONS = ["All", "Delivered", "Shipped", "Processing", "Cancelled", "Returned"]; void FILTER_OPTIONS;
 
 // ── Progress steps for tracking ───────────────────────────────────────────
 const PROGRESS_STEPS: Record<OrderStatus, number> = {
@@ -530,7 +530,7 @@ export default function OrdersPage() {
               const isOpen  = expanded === order.id;
               const step    = PROGRESS_STEPS[order.status];
               const showTrack = order.status === "shipped" || order.status === "delivered";
-              const shipping  = order.items.reduce((s,i) => s + i.product.price * i.qty, 0);
+              const _shipping  = order.items.reduce((s,i) => s + i.product.price * i.qty, 0); void _shipping;
 
               return (
                 <div
