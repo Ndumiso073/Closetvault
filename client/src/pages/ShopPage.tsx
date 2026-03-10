@@ -65,12 +65,17 @@ export default function ShopPage() {
   const FilterContents = () => (
     <div className="sb-inner">
       <div className="sb-header">
-        <span className="sb-title">FILTERS</span>
-        {filterCount > 0 && (
-          <button className="sb-clear-btn" onClick={clearAll}>
-            <X size={11} /> Clear all
+        <span className="sb-title">FILTERS {filterCount > 0 && `(${filterCount})`}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {filterCount > 0 && (
+            <button className="sb-clear-btn" onClick={clearAll}>
+              <X size={11} /> Clear
+            </button>
+          )}
+          <button className="sb-close-btn" onClick={() => setShowFilters(false)} aria-label="Close filters">
+            <X size={18} />
           </button>
-        )}
+        </div>
       </div>
 
       {/* CATEGORY */}
@@ -211,6 +216,31 @@ export default function ShopPage() {
         }
         .shop-sidebar::-webkit-scrollbar { width: 3px; }
         .shop-sidebar::-webkit-scrollbar-thumb { background: var(--mid); }
+
+        /* ─── FILTER BACKDROP (mobile only) ─── */
+        .shop-filter-backdrop {
+          display: none;
+        }
+        @media (max-width: 768px) {
+          .shop-filter-backdrop {
+            display: block;
+            position: fixed; inset: 0; z-index: 290;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(2px);
+            animation: fadeIn .2s ease;
+          }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ─── SIDEBAR CLOSE BUTTON (mobile only) ─── */
+        .sb-close-btn {
+          display: none;
+          background: transparent; border: none; cursor: pointer;
+          color: var(--dim); transition: color .2s;
+          width: 44px; height: 44px;
+          align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .sb-close-btn:hover { color: var(--white); }
 
         /* ─── HERO BANNER (compact) ─── */
         .shop-hero {
@@ -404,7 +434,7 @@ export default function ShopPage() {
         .sb-section-header {
           display: flex; align-items: center; justify-content: space-between;
           cursor: pointer; margin-bottom: 0; user-select: none;
-          padding: 2px 0;
+          padding: 8px 0; touch-action: manipulation;
         }
         .sb-section-header:hover .sb-section-label { color: var(--white); }
         .sb-section-label {
@@ -419,10 +449,11 @@ export default function ShopPage() {
         .sb-section-body.closed { display: none; }
 
         /* check list */
-        .sb-checklist { display: flex; flex-direction: column; gap: 6px; }
+        .sb-checklist { display: flex; flex-direction: column; gap: 2px; }
         .sb-check {
           display: flex; align-items: center; gap: 10px;
-          cursor: pointer; padding: 5px 0; transition: color .2s;
+          cursor: pointer; padding: 10px 0; transition: color .2s;
+          touch-action: manipulation;
         }
         .sb-check:hover .sb-check-label { color: var(--white); }
         .sb-checkbox {
@@ -444,15 +475,15 @@ export default function ShopPage() {
         }
 
         /* size pills */
-        .sb-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+        .sb-pills { display: flex; flex-wrap: wrap; gap: 6px; }
         .sb-pill {
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 12px; font-weight: 700; letter-spacing: 1px;
           background: var(--mid); color: var(--dim);
           border: 1px solid var(--border);
-          padding: 6px 10px; cursor: pointer;
+          padding: 11px 14px; min-height: 44px; cursor: pointer;
           clip-path: polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
-          transition: all .15s;
+          transition: all .15s; touch-action: manipulation;
         }
         .sb-pill:hover { border-color: rgba(255,255,255,.2); color: var(--white); }
         .sb-pill.on { background: var(--accent); border-color: var(--accent); color: var(--white); }
@@ -536,9 +567,9 @@ export default function ShopPage() {
 
         /* heart */
         .card-heart {
-          position: absolute; top: 10px; right: 10px; z-index: 2;
+          position: absolute; top: 8px; right: 8px; z-index: 2;
           background: rgba(10,10,10,.72); border: 1px solid rgba(255,255,255,.1);
-          width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+          width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
           cursor: pointer; transition: all .2s; backdrop-filter: blur(4px);
         }
         .card-heart:hover, .card-heart.on { background: var(--accent); border-color: var(--accent); }
@@ -577,11 +608,12 @@ export default function ShopPage() {
         /* card actions */
         .card-actions { display: flex; gap: 2px; }
         .card-btn {
-          flex: 1; padding: 10px 6px;
+          flex: 1; padding: 12px 6px; min-height: 44px;
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
           border: none; cursor: pointer; transition: all .2s;
           display: flex; align-items: center; justify-content: center; gap: 5px;
+          touch-action: manipulation;
         }
         .card-btn-cart {
           background: var(--accent); color: var(--white);
@@ -652,17 +684,17 @@ export default function ShopPage() {
           font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px;
           background: var(--gray); color: var(--dim);
           border: 1px solid var(--border);
-          width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-          cursor: pointer; transition: all .2s;
+          width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+          cursor: pointer; transition: all .2s; touch-action: manipulation;
         }
         .pg-btn:hover:not(.disabled) { border-color: rgba(255,255,255,.2); color: var(--white); }
         .pg-btn.on { background: var(--accent); border-color: var(--accent); color: var(--white); }
         .pg-btn.disabled { opacity: .3; pointer-events: none; }
         .pg-arrow {
           background: var(--mid); border: 1px solid var(--border);
-          width: 40px; height: 40px;
+          width: 44px; height: 44px;
           display: flex; align-items: center; justify-content: center;
-          cursor: pointer; color: var(--dim); transition: all .2s;
+          cursor: pointer; color: var(--dim); transition: all .2s; touch-action: manipulation;
         }
         .pg-arrow:hover:not(.disabled) { color: var(--white); border-color: rgba(255,255,255,.2); }
         .pg-arrow.disabled { opacity: .3; pointer-events: none; }
@@ -686,25 +718,73 @@ export default function ShopPage() {
           :root { --sb-w: 240px; }
         }
         @media (max-width: 768px) {
+          /* Sidebar becomes full-height drawer from top */
           .shop-sidebar {
-            position: fixed; top: calc(var(--nav-h) + 48px); left: 0; bottom: 0; z-index: 90;
-            box-shadow: 4px 0 24px rgba(0,0,0,.6);
-            max-height: none;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 300;
+            width: min(300px, 85vw) !important;
+            max-height: 100vh;
+            box-shadow: 6px 0 32px rgba(0,0,0,.7);
+            transform: translateX(-100%);
+            transition: transform .3s cubic-bezier(.4,0,.2,1);
+            /* override desktop collapse styles */
+            opacity: 1 !important;
           }
-          .shop-hero { height: 180px; }
-          .prod-grid { grid-template-columns: repeat(2, 1fr); }
+          .shop-sidebar:not(.collapsed) {
+            transform: translateX(0);
+            pointer-events: auto !important;
+          }
+          .shop-sidebar.collapsed {
+            transform: translateX(-100%);
+            pointer-events: none !important;
+          }
+          /* show close button inside sidebar on mobile */
+          .sb-close-btn { display: flex; }
+          /* toolbar touch targets */
+          .tb-btn { padding: 10px 14px; min-height: 44px; }
+          .tb-view-btn { padding: 12px; min-width: 44px; min-height: 44px; }
+          .shop-hero { height: 200px; }
+          .prod-grid { grid-template-columns: repeat(2, 1fr); gap: 3px; }
           .prod-grid.list .card { height: auto; flex-direction: column; }
           .prod-grid.list .card-img { width: 100%; height: 180px; }
           .prod-grid.list .card-body { flex-direction: column; align-items: flex-start; }
           .prod-grid.list .card-actions { width: 100%; flex-direction: row; }
           .tb-search { min-width: 0; flex: 1; }
+          /* active filter count bar */
+          .shop-active-filters { display: flex; }
         }
         @media (max-width: 480px) {
-          .prod-grid, .prod-grid.list { grid-template-columns: 1fr; }
+          .prod-grid { grid-template-columns: 1fr; }
+          .prod-grid.list { grid-template-columns: 1fr; }
+        }
+
+        /* ─── ACTIVE FILTERS BAR (mobile) ─── */
+        .shop-active-filters {
+          display: none;
+          align-items: center; gap: 8px;
+          padding: 8px var(--side-pad-mobile);
+          background: rgba(255,45,0,.07);
+          border-bottom: 1px solid rgba(255,45,0,.15);
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+          color: var(--accent);
+        }
+        .shop-active-filters button {
+          background: transparent; border: none; color: var(--accent);
+          cursor: pointer; font-size: 11px; font-weight: 700;
+          letter-spacing: 2px; text-transform: uppercase;
+          font-family: 'Barlow Condensed', sans-serif;
+          padding: 0; text-decoration: underline;
+          touch-action: manipulation;
         }
       `}</style>
 
       <div>
+        {/* ── MOBILE FILTER BACKDROP ── */}
+        {showFilters && (
+          <div className="shop-filter-backdrop" onClick={() => setShowFilters(false)} />
+        )}
 
         {/* ── HERO BANNER ── */}
         <div className="shop-hero">
@@ -788,6 +868,15 @@ export default function ShopPage() {
             </div>
           </div>
         </div>
+
+        {/* ── ACTIVE FILTERS BAR (mobile) ── */}
+        {filterCount > 0 && (
+          <div className="shop-active-filters">
+            <SlidersHorizontal size={12} />
+            {filterCount} filter{filterCount > 1 ? "s" : ""} active
+            <button onClick={clearAll}>Clear all</button>
+          </div>
+        )}
 
         {/* ── BODY ── */}
         <div className="shop-layout" onClick={() => sortOpen && setSortOpen(false)}>
