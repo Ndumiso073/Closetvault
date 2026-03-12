@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle, Check } from "lucide-react";
 import { SHARED_CSS, AuthLeft, GoogleButton, pwStrength } from "./_shared";
+import { supabase } from "../../lib/supabase";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -33,14 +34,27 @@ export default function RegisterPage() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setAlert(null);
     if (!validate()) return;
     setLoading(true);
-    setTimeout(() => {
-      setAlert({ type: "success", msg: "Account created! Redirecting to your vault..." });
-      setTimeout(() => navigate("/vault"), 1400);
-    }, 1600);
+    const { error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: {
+        data: {
+          full_name: `${form.firstName} ${form.lastName}`.trim(),
+          username: form.username,
+        },
+      },
+    });
+    if (error) {
+      setAlert({ type: "error", msg: error.message });
+      setLoading(false);
+    } else {
+      setAlert({ type: "success", msg: "Account created! Check your email to confirm, then sign in." });
+      setTimeout(() => navigate("/auth/login"), 2000);
+    }
   };
 
   return (

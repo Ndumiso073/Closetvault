@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
 import { SHARED_CSS, AuthLeft, GoogleButton } from "./_shared";
+import { supabase } from "../../lib/supabase";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -20,19 +21,18 @@ export default function LoginPage() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setAlert(null);
     if (!validate()) return;
     setLoading(true);
-    setTimeout(() => {
-      if (email === "demo@closet.vault" && password === "vault123") {
-        setAlert({ type: "success", msg: "Welcome back! Redirecting..." });
-        setTimeout(() => navigate("/vault"), 1200);
-      } else {
-        setAlert({ type: "error", msg: "Incorrect email or password. Try demo@closet.vault / vault123" });
-        setLoading(false);
-      }
-    }, 1400);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setAlert({ type: "error", msg: error.message });
+      setLoading(false);
+    } else {
+      setAlert({ type: "success", msg: "Welcome back! Redirecting..." });
+      setTimeout(() => navigate("/vault"), 1000);
+    }
   };
 
   return (
@@ -117,9 +117,6 @@ export default function LoginPage() {
               )}
             </button>
 
-            <p style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,.2)", fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 1 }}>
-              Demo: demo@closet.vault / vault123
-            </p>
           </div>
         </div>
       </div>
