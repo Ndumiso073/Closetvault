@@ -158,26 +158,28 @@ export default function LaunchesPage() {
         /* ── HERO ── */
         .drops-hero {
           position: relative; overflow: hidden;
-          padding: 80px 20px 72px;
-          min-height: 520px;
+          padding: 72px 20px 64px;
+          min-height: 500px;
           background: var(--black);
           border-bottom: 1px solid rgba(255,255,255,.07);
         }
         .drops-hero-bg {
           position: absolute; inset: 0;
           background-image: url('/assets/charlesdeluvio-eR8qaAM6k1U-unsplash.jpg');
-          background-size: cover; background-position: center 55%;
-          filter: brightness(.55) saturate(.5) contrast(1.1);
+          background-size: cover;
+          background-position: center 50%;
+          /* desaturate fully so it stays b&w, then darken overall */
+          filter: brightness(.42) saturate(0) contrast(1.05);
         }
         .drops-hero-overlay {
           position: absolute; inset: 0;
           background:
-            /* neon warm glow on the right where the sign lives */
-            radial-gradient(ellipse 55% 70% at 75% 50%, rgba(255,200,100,.06) 0%, transparent 65%),
-            /* dark vignette on left so text is always readable */
-            linear-gradient(to right, rgba(8,8,8,.97) 0%, rgba(8,8,8,.82) 38%, rgba(8,8,8,.3) 62%, rgba(8,8,8,.55) 100%),
-            /* subtle bottom fade into page */
-            linear-gradient(to bottom, transparent 60%, rgba(8,8,8,.85) 100%);
+            /* heavy dark wall on left — text zone stays fully readable */
+            linear-gradient(to right, rgba(6,6,6,.98) 0%, rgba(6,6,6,.88) 35%, rgba(6,6,6,.4) 60%, rgba(6,6,6,.15) 100%),
+            /* subtle bottom scrim so pills don't float on bare image */
+            linear-gradient(to top, rgba(6,6,6,.7) 0%, transparent 35%),
+            /* faint warm neon glow around where the sign lives */
+            radial-gradient(ellipse 50% 60% at 72% 48%, rgba(255,255,200,.04) 0%, transparent 70%);
         }
         .drops-hero-inner {
           position: relative; z-index: 1;
