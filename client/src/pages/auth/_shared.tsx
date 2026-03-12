@@ -24,16 +24,20 @@ export const SHARED_CSS = `
 
   .auth-left-bg {
     position: absolute; inset: 0;
-    background-size: cover; background-position: center;
-    filter: brightness(.35) saturate(.6);
+    background-size: cover; background-position: center 30%;
+    filter: brightness(.45) saturate(.7);
   }
   .auth-left-gradient {
     position: absolute; inset: 0;
     background: linear-gradient(
-      135deg,
-      rgba(10,10,10,.95) 0%,
-      rgba(10,10,10,.6) 50%,
-      rgba(255,45,0,.08) 100%
+      to bottom,
+      rgba(10,10,10,.55) 0%,
+      rgba(10,10,10,.3) 40%,
+      rgba(10,10,10,.92) 100%
+    ), linear-gradient(
+      to right,
+      rgba(10,10,10,.7) 0%,
+      transparent 60%
     );
   }
   .auth-left-scan {
@@ -286,7 +290,7 @@ export function AuthLeft({ mode }: { mode: "login" | "register" }) {
     <div className="auth-left">
       <div
         className="auth-left-bg"
-        style={{ backgroundImage: "url('/assets/cool-sunny.jpg')" }}
+        style={{ backgroundImage: "url('/assets/danny-greenberg.jpg')" }}
       />
       <div className="auth-left-gradient" />
       <div className="auth-left-scan" />

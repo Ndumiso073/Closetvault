@@ -158,21 +158,26 @@ export default function LaunchesPage() {
         /* ── HERO ── */
         .drops-hero {
           position: relative; overflow: hidden;
-          padding: 64px 20px 56px;
+          padding: 80px 20px 72px;
+          min-height: 520px;
           background: var(--black);
           border-bottom: 1px solid rgba(255,255,255,.07);
         }
         .drops-hero-bg {
           position: absolute; inset: 0;
-          background-image: url('/assets/redd-francisco-MqaUWQoXgbc-unsplash.jpg');
-          background-size: cover; background-position: center;
-          filter: brightness(.18) saturate(.5);
+          background-image: url('/assets/charlesdeluvio-eR8qaAM6k1U-unsplash.jpg');
+          background-size: cover; background-position: center 55%;
+          filter: brightness(.55) saturate(.5) contrast(1.1);
         }
         .drops-hero-overlay {
           position: absolute; inset: 0;
           background:
-            radial-gradient(ellipse 60% 80% at 70% 50%, rgba(255,45,0,.12) 0%, transparent 70%),
-            linear-gradient(to right, rgba(10,10,10,.95) 40%, rgba(10,10,10,.5) 100%);
+            /* neon warm glow on the right where the sign lives */
+            radial-gradient(ellipse 55% 70% at 75% 50%, rgba(255,200,100,.06) 0%, transparent 65%),
+            /* dark vignette on left so text is always readable */
+            linear-gradient(to right, rgba(8,8,8,.97) 0%, rgba(8,8,8,.82) 38%, rgba(8,8,8,.3) 62%, rgba(8,8,8,.55) 100%),
+            /* subtle bottom fade into page */
+            linear-gradient(to bottom, transparent 60%, rgba(8,8,8,.85) 100%);
         }
         .drops-hero-inner {
           position: relative; z-index: 1;
