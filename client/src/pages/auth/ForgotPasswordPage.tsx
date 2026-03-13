@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Mail, ArrowLeft, Check, AlertCircle, Lock, Eye, EyeOff, ChevronRight } from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 type Step = "email" | "otp" | "reset" | "done";
 
@@ -38,20 +39,37 @@ export default function ForgotPasswordPage() {
     }, 1000);
   };
 
+  /* ── detect recovery token in URL (user clicked email link) ── */
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes("type=recovery") || hash.includes("type=email_change")) {
+      setStep("reset");
+    }
+  }, []);
+
   /* ── step handlers ── */
-  const handleEmailSubmit = () => {
+  const handleEmailSubmit = async () => {
     if (!emailValid) { setError("Please enter a valid email address"); return; }
     setError(""); setLoading(true);
-    setTimeout(() => { setLoading(false); setStep("otp"); startResendTimer(); }, 1400);
+    const redirectTo = `${window.location.origin}/auth/forgot`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    setLoading(false);
+    if (error) { setError(error.message); return; }
+    setStep("otp");
+    startResendTimer();
   };
 
-  const handleOtpSubmit = () => {
+  const handleOtpSubmit = async () => {
     if (!otpFull) { setError("Please enter all 6 digits"); return; }
     setError(""); setLoading(true);
-    setTimeout(() => {
-      if (otp.join("") === "000000") { setError("Invalid code. Try 123456."); setLoading(false); return; }
-      setLoading(false); setStep("reset");
-    }, 1200);
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: otp.join(""),
+      type: "email",
+    });
+    setLoading(false);
+    if (error) { setError("Invalid or expired code. Please try again."); return; }
+    setStep("reset");
   };
 
   const handleOtpChange = (idx: number, val: string) => {
@@ -79,12 +97,15 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const handleResetSubmit = () => {
-    if (newPass.length < 8)           { setError("Password must be at least 8 characters"); return; }
-    if (newPass !== confirmPass)       { setError("Passwords do not match"); return; }
-    if (passStrength < 2)              { setError("Please choose a stronger password"); return; }
+  const handleResetSubmit = async () => {
+    if (newPass.length < 8)      { setError("Password must be at least 8 characters"); return; }
+    if (newPass !== confirmPass)  { setError("Passwords do not match"); return; }
+    if (passStrength < 2)         { setError("Please choose a stronger password"); return; }
     setError(""); setLoading(true);
-    setTimeout(() => { setLoading(false); setStep("done"); }, 1500);
+    const { error } = await supabase.auth.updateUser({ password: newPass });
+    setLoading(false);
+    if (error) { setError(error.message); return; }
+    setStep("done");
   };
 
   const handleResend = () => {
