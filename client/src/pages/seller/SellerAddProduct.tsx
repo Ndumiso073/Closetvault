@@ -6,6 +6,7 @@ import {
   Package, Tag, Truck, ImageIcon, DollarSign,
   BarChart2, Layers, ArrowLeft, Info
 } from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 /* ─── TYPES ───────────────────────────────────── */
 type ProductStatus = "active" | "draft" | "out_of_stock";
@@ -188,17 +189,78 @@ export default function SellerAddProduct() {
     return Object.keys(e).length === 0;
   };
 
-  /* ── SUBMIT ── */
-  const handleSaveDraft = () => {
-    setErrors({});
-    setSaving(true);
-    setTimeout(() => { setSaving(false); setSuccess("draft"); }, 1200);
+  /* ── UPLOAD images to Supabase Storage ── */
+  const uploadImages = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const img of images) {
+      const ext  = img.file.name.split(".").pop();
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("product-images")
+        .upload(path, img.file, { upsert: false });
+      if (error) throw new Error(`Image upload failed: ${error.message}`);
+      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+      urls.push(data.publicUrl);
+    }
+    // put main image first
+    const mainIdx = images.findIndex(i => i.isMain);
+    if (mainIdx > 0) { const [m] = urls.splice(mainIdx, 1); urls.unshift(m); }
+    return urls;
   };
 
-  const handlePublish = () => {
+  /* ── SAVE to Supabase products table ── */
+  const saveProduct = async (productStatus: "active" | "draft") => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setErrors({ submit: "You must be logged in to list a product." }); return false; }
+
+    const imageUrls = await uploadImages();
+
+    const payload = {
+      seller_id:      user.id,
+      title:          name.trim(),
+      brand:          brand.trim(),
+      category,
+      price:          parseFloat(price),
+      original_price: salePrice ? parseFloat(price) : null,
+      condition,
+      size:           selectedSizes.join(", ") || "One Size",
+      gender,
+      description:    description.trim(),
+      images:         imageUrls,
+      tags,
+      status:         productStatus,
+    };
+
+    const { error } = await supabase.from("products").insert(payload);
+    if (error) { setErrors({ submit: error.message }); return false; }
+    return true;
+  };
+
+  /* ── SUBMIT ── */
+  const handleSaveDraft = async () => {
+    setErrors({});
+    setSaving(true);
+    try {
+      const ok = await saveProduct("draft");
+      if (ok) setSuccess("draft");
+    } catch (e: any) {
+      setErrors({ submit: e.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePublish = async () => {
     if (!validate()) return;
     setPublishing(true);
-    setTimeout(() => { setPublishing(false); setSuccess("published"); }, 1600);
+    try {
+      const ok = await saveProduct("active");
+      if (ok) setSuccess("published");
+    } catch (e: any) {
+      setErrors({ submit: e.message });
+    } finally {
+      setPublishing(false);
+    }
   };
 
   /* ── SUCCESS SCREEN ── */

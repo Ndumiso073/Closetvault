@@ -1,43 +1,66 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
   Search, SlidersHorizontal, ChevronDown, X, Heart, ShoppingBag,
   Grid3X3, LayoutList, ArrowLeft, ArrowRight, ChevronUp
 } from "lucide-react";
-import { PRODUCTS, BRANDS, CATEGORIES, CONDITIONS, SIZES, SORT_OPTIONS, IMG_SHOP_HERO } from "../data/products";
+import { BRANDS, CATEGORIES, CONDITIONS, SIZES, SORT_OPTIONS, IMG_SHOP_HERO } from "../data/products";
 import { useCart } from "../context/CartContext";
+import { supabase } from "../lib/supabase";
+
+type DbProduct = {
+  id: string; title: string; brand: string; price: number;
+  original_price: number | null; condition: string; category: string;
+  images: string[]; size: string; gender: string; status: string;
+};
 
 const PER_PAGE = 12;
 
 export default function ShopPage() {
   const { category } = useParams();
   const { addToCart } = useCart();
+  const [products, setProducts]       = useState<DbProduct[]>([]);
+  const [loading, setLoading]         = useState(true);
   const [search, setSearch]           = useState("");
   const [sortBy, setSortBy]           = useState("newest");
   const [sortOpen, setSortOpen]       = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode]       = useState<"grid"|"list">("grid");
   const [page, setPage]               = useState(1);
-  const [priceRange, setPriceRange]   = useState([0, 500]);
+  const [priceRange, setPriceRange]   = useState([0, 5000]);
   const [selBrands, setSelBrands]     = useState<string[]>([]);
   const [selCats, setSelCats]         = useState<string[]>([]);
   const [selSizes, setSelSizes]       = useState<string[]>([]);
   const [selConds, setSelConds]       = useState<string[]>([]);
-  const [saved, setSaved]             = useState<Record<number, boolean>>({});
-  const [added, setAdded]             = useState<Record<number, boolean>>({});
+  const [saved, setSaved]             = useState<Record<string, boolean>>({});
+  const [added, setAdded]             = useState<Record<string, boolean>>({});
   const [catOpen, setCatOpen]         = useState(true);
   const [brandOpen, setBrandOpen]     = useState(true);
   const [sizeOpen, setSizeOpen]       = useState(true);
   const [condOpen, setCondOpen]       = useState(true);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select("id,title,brand,price,original_price,condition,category,images,size,gender,status")
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      if (!error && data) setProducts(data);
+      setLoading(false);
+    };
+    fetchProducts();
+  }, []);
+
   const toggle = <T,>(arr: T[], set: (v: T[]) => void, val: T) =>
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]);
 
-  const filtered = PRODUCTS.filter(p => {
+  const filtered = products.filter(p => {
     const q = search.toLowerCase();
     return (
-      (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)) &&
+      (!q || p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)) &&
       (!selBrands.length || selBrands.includes(p.brand)) &&
       (!selCats.length   || selCats.includes(p.category)) &&
       (!selConds.length  || selConds.includes(p.condition)) &&
@@ -47,8 +70,8 @@ export default function ShopPage() {
   }).sort((a, b) =>
     sortBy === "price-asc"  ? a.price - b.price :
     sortBy === "price-desc" ? b.price - a.price :
-    sortBy === "popular"    ? (b.id % 7) - (a.id % 7) :
-    b.id - a.id
+    sortBy === "popular"    ? 0 :
+    0
   );
 
   const totalPages  = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
@@ -61,9 +84,9 @@ export default function ShopPage() {
     setPriceRange([0, 500]); setSearch(""); setPage(1);
   };
 
-  const handleAddCart = (id: number) => {
-    const product = PRODUCTS.find(p => p.id === id);
-    if (product) addToCart(product, "M");
+  const handleAddCart = (id: string) => {
+    const product = products.find(p => p.id === id);
+    if (product) addToCart({ id: product.id as unknown as number, name: product.title, brand: product.brand, price: product.price, originalPrice: product.original_price, condition: product.condition, category: product.category, img: product.images?.[0] ?? "", isNew: false, isHot: false }, "M");
     setAdded(prev => ({ ...prev, [id]: true }));
     setTimeout(() => setAdded(prev => ({ ...prev, [id]: false })), 1200);
   };
@@ -93,7 +116,7 @@ export default function ShopPage() {
               <div key={c} className="sb-check" onClick={() => { toggle(selCats, setSelCats, c); setPage(1); }}>
                 <div className={`sb-checkbox ${selCats.includes(c) ? "on" : ""}`} />
                 <span className="sb-check-label">{c}</span>
-                <span className="sb-check-count">{PRODUCTS.filter(p => p.category === c).length}</span>
+                <span className="sb-check-count">{products.filter((p: DbProduct) => p.category === c).length}</span>
               </div>
             ))}
           </div>
@@ -111,7 +134,7 @@ export default function ShopPage() {
               <div key={b} className="sb-check" onClick={() => { toggle(selBrands, setSelBrands, b); setPage(1); }}>
                 <div className={`sb-checkbox ${selBrands.includes(b) ? "on" : ""}`} />
                 <span className="sb-check-label">{b}</span>
-                <span className="sb-check-count">{PRODUCTS.filter(p => p.brand === b).length}</span>
+                <span className="sb-check-count">{products.filter((p: DbProduct) => p.brand === b).length}</span>
               </div>
             ))}
           </div>
@@ -741,20 +764,29 @@ export default function ShopPage() {
 
           <main className="shop-main">
             <div className={`prod-grid ${viewMode === "list" ? "list" : ""}`}>
-              {pageItems.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="card" style={{ opacity: .4, pointerEvents: "none" }}>
+                    <div className="card-img" style={{ background: "rgba(255,255,255,.05)", minHeight: 220 }} />
+                    <div className="card-body">
+                      <div style={{ height: 12, background: "rgba(255,255,255,.07)", borderRadius: 4, marginBottom: 8 }} />
+                      <div style={{ height: 16, background: "rgba(255,255,255,.07)", borderRadius: 4, marginBottom: 6, width: "70%" }} />
+                      <div style={{ height: 14, background: "rgba(255,255,255,.05)", borderRadius: 4, width: "40%" }} />
+                    </div>
+                  </div>
+                ))
+              ) : pageItems.length === 0 ? (
                 <div className="empty">
                   <div className="empty-num">0</div>
-                  <div className="empty-title">No Products Found</div>
-                  <p className="empty-sub">Try adjusting your filters or search term</p>
+                  <div className="empty-title">No Products Yet</div>
+                  <p className="empty-sub">Be the first to list a product on ClosetVault</p>
                   <button className="btn-primary" onClick={clearAll}>Clear Filters</button>
                 </div>
               ) : (
                 pageItems.map(p => (
                   <div key={p.id} className="card">
                     <div className="card-badges">
-                      {p.isNew && <span className="cbadge cbadge-new">NEW</span>}
-                      {p.isHot && <span className="cbadge cbadge-hot">🔥 HOT</span>}
-                      {p.originalPrice && <span className="cbadge cbadge-sale">SALE</span>}
+                      {p.original_price && <span className="cbadge cbadge-sale">SALE</span>}
                     </div>
                     <button
                       className={`card-heart ${saved[p.id] ? "on" : ""}`}
@@ -763,19 +795,19 @@ export default function ShopPage() {
                       <Heart size={12} />
                     </button>
                     <Link to={`/product/${p.id}`} className="card-img">
-                      <img src={p.img} alt={p.name} loading="lazy" />
+                      <img src={p.images?.[0] ?? "/assets/placeholder.jpg"} alt={p.title} loading="lazy" />
                     </Link>
                     <div className="card-body">
                       <div className={viewMode === "list" ? "card-info" : ""}>
                         <div className="card-cond">{p.condition} · {p.category}</div>
-                        <div className="card-name">{p.name}</div>
+                        <div className="card-name">{p.title}</div>
                         <div className="card-brand">{p.brand}</div>
                         <div className="card-price-row">
                           <span className="card-price">R{p.price}</span>
-                          {p.originalPrice && (
+                          {p.original_price && (
                             <>
-                              <span className="card-orig">R{p.originalPrice}</span>
-                              <span className="card-save-pct">-{Math.round((1 - p.price/p.originalPrice)*100)}%</span>
+                              <span className="card-orig">R{p.original_price}</span>
+                              <span className="card-save-pct">-{Math.round((1 - p.price/p.original_price)*100)}%</span>
                             </>
                           )}
                         </div>
