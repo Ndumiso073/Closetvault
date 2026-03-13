@@ -1,13 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import {
   ShoppingBag, Heart, Star, ChevronLeft, Share2,
   Shield, Truck, RotateCcw, Check, ChevronRight
 } from "lucide-react";
-import { PRODUCTS, PRODUCT_IMGS, SIZES } from "../data/products";
+import { SIZES, type Product as CartProduct } from "../data/products";
+import { supabase } from "../lib/supabase";
 
-// ── Mock data ────────────────────────────────────────────────────────────
+type DbProduct = {
+  id: string;
+  seller_id: string | null;
+  title: string;
+  brand: string;
+  category: string;
+  price: number;
+  original_price: number | null;
+  condition: string;
+  size: string;
+  gender: string;
+  description: string | null;
+  images: string[] | null;
+  tags: string[] | null;
+  status: string;
+};
+
+// ── Mock static data (reviews, seller badge) ─────────────────────────────
 const MOCK_REVIEWS = [
   { id: 1, name: "Jordan K.",  rating: 5, date: "Feb 14, 2026", verified: true,  comment: "Absolutely fire. Fits true to size, quality is unreal. Shipped fast and packaged perfectly. Would buy again without hesitation." },
   { id: 2, name: "Sipho M.",   rating: 4, date: "Jan 30, 2026", verified: true,  comment: "Clean colourway, exactly as described. Condition is legit Like New. Delivery took an extra day but 100% worth the wait." },
@@ -19,7 +37,9 @@ export default function ProductDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const product = PRODUCTS.find(p => p.id === Number(id));
+  const [product, setProduct]     = useState<DbProduct | null>(null);
+  const [similar, setSimilar]     = useState<DbProduct[]>([]);
+  const [loading, setLoading]     = useState(true);
 
   const [activeImg, setActiveImg]   = useState(0);
   const [selectedSize, setSize]     = useState<string | null>(null);
@@ -28,33 +48,87 @@ export default function ProductDetailsPage() {
   const [sizeError, setSizeError]   = useState(false);
   const [activeTab, setActiveTab]   = useState<"desc" | "shipping" | "returns">("desc");
 
-  // build thumbnail list: product image first, then extras from PRODUCT_IMGS
-  const thumbs = product
-    ? [product.img, ...PRODUCT_IMGS.filter(i => i !== product.img).slice(0, 4)]
-    : PRODUCT_IMGS.slice(0, 5);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (!error && data) {
+        setProduct(data as DbProduct);
+        // fetch a few similar products in same category
+        const { data: sim } = await supabase
+          .from("products")
+          .select("id,title,brand,price,original_price,condition,category,images")
+          .eq("category", data.category)
+          .neq("id", data.id)
+          .eq("status", "active")
+          .limit(6);
+        if (sim) setSimilar(sim as DbProduct[]);
+      }
+      setLoading(false);
+    };
+    fetchProduct();
+  }, [id]);
 
-  const similar = product
-    ? PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 6)
-    : [];
+  // build thumbnail list from stored images
+  const thumbs = (() => {
+    const imgs = product?.images && product.images.length > 0
+      ? product.images
+      : ["/assets/placeholder.jpg"];
+    return imgs;
+  })();
+
+  const toCartProduct = (p: DbProduct): CartProduct => ({
+    id: 0, // DB id is string; cart only uses it for cartId key
+    name: p.title,
+    brand: p.brand,
+    price: p.price,
+    originalPrice: p.original_price,
+    condition: p.condition,
+    category: p.category,
+    img: p.images?.[0] ?? "",
+    isNew: false,
+    isHot: false,
+  });
 
   const handleAddCart = () => {
     if (!selectedSize) { setSizeError(true); setTimeout(() => setSizeError(false), 2200); return; }
-    if (product) addToCart(product, selectedSize);
+    if (product) addToCart(toCartProduct(product), selectedSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   };
 
   const handleBuyNow = () => {
     if (!selectedSize) { setSizeError(true); setTimeout(() => setSizeError(false), 2200); return; }
-    if (product) addToCart(product, selectedSize);
+    if (product) addToCart(toCartProduct(product), selectedSize);
     navigate("/cart");
   };
 
-  const savePct = product?.originalPrice
-    ? Math.round((1 - product.price / product.originalPrice) * 100)
+  const savePct = product?.original_price
+    ? Math.round((1 - product.price / product.original_price) * 100)
     : null;
 
-  // ── 404 ──────────────────────────────────────────────────────────────
+  // ── LOADING / 404 ───────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <>
+        <style>{`
+          .pd-loading {
+            min-height: 60vh; display:flex; align-items:center; justify-content:center;
+            font-family:'Barlow',sans-serif; color:rgba(255,255,255,.5);
+          }
+        `}</style>
+        <div className="pd-loading">Loading product…</div>
+      </>
+    );
+  }
+
   if (!product) {
     return (
       <>
@@ -600,7 +674,7 @@ export default function ProductDetailsPage() {
           <span className="pd-crumb-sep">›</span>
           <Link to={`/shop/${product.category.toLowerCase()}`}>{product.category}</Link>
           <span className="pd-crumb-sep">›</span>
-          <span className="pd-crumb-cur">{product.name}</span>
+          <span className="pd-crumb-cur">{product.title}</span>
         </nav>
 
         {/* ── PRODUCT GRID ── */}
@@ -623,11 +697,9 @@ export default function ProductDetailsPage() {
 
             {/* main image */}
             <div className="pd-img-wrap">
-              <img src={thumbs[activeImg]} alt={product.name} />
+              <img src={thumbs[activeImg]} alt={product.title} />
               <div className="pd-img-badges">
-                {product.isNew      && <span className="pdb pdb-new">NEW</span>}
-                {product.isHot      && <span className="pdb pdb-hot">🔥 HOT</span>}
-                {product.originalPrice && <span className="pdb pdb-sale">SALE</span>}
+                {product.original_price && <span className="pdb pdb-sale">SALE</span>}
               </div>
               <button className="pd-share" aria-label="Share"><Share2 size={14} /></button>
             </div>
@@ -643,7 +715,7 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* name */}
-            <h1 className="pd-name">{product.name}</h1>
+            <h1 className="pd-name">{product.title}</h1>
 
             {/* brand + stars */}
             <div className="pd-brand-row">
@@ -661,10 +733,10 @@ export default function ProductDetailsPage() {
             {/* price */}
             <div className="pd-price-row">
               <span className="pd-price">R{product.price}</span>
-              {product.originalPrice && (
+              {product.original_price && (
                 <>
-                  <span className="pd-orig">R{product.originalPrice}</span>
-                  <span className="pd-pct">Save {savePct}%</span>
+                  <span className="pd-orig">R{product.original_price}</span>
+                  {savePct !== null && <span className="pd-pct">Save {savePct}%</span>}
                 </>
               )}
             </div>
@@ -758,8 +830,10 @@ export default function ProductDetailsPage() {
             <div className="pd-tab-body">
               {activeTab === "desc" && (
                 <p>
-                  The <strong style={{color:"var(--white)"}}>{product.name}</strong> by {product.brand} — in {product.condition.toLowerCase()} condition.
-                  A cornerstone of the streetwear scene, this pair delivers iconic silhouette with premium materials.
+                  The <strong style={{color:"var(--white)"}}>{product.title}</strong> by {product.brand} — in {product.condition.toLowerCase()} condition.
+                  {product.description
+                    ? <> {product.description}</>
+                    : <> A cornerstone of the streetwear scene, this pair delivers an iconic silhouette with premium materials.</>}
                   Verified authentic by our team. Every pair is inspected before listing. What you see is exactly what you get.
                 </p>
               )}
@@ -802,11 +876,11 @@ export default function ProductDetailsPage() {
                   style={{ animationDelay: `${i * 0.05}s` }}
                 >
                   <div className="pd-card-img">
-                    <img src={p.img} alt={p.name} loading="lazy" />
+                    <img src={p.images?.[0] ?? "/assets/placeholder.jpg"} alt={p.title} loading="lazy" />
                   </div>
                   <div className="pd-card-body">
                     <div className="pd-card-cond">{p.condition} · {p.category}</div>
-                    <div className="pd-card-name">{p.name}</div>
+                    <div className="pd-card-name">{p.title}</div>
                     <div className="pd-card-brand">{p.brand}</div>
                     <div className="pd-card-price">R{p.price}</div>
                     <button className="pd-card-btn" onClick={e => e.preventDefault()}>
