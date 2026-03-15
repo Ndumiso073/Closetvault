@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import { CartProvider } from "./context/CartContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import LandingPage            from "./pages/LandingPage";
 import ShopPage               from "./pages/ShopPage";
@@ -26,6 +27,8 @@ import SellerOrders           from "./pages/seller/SellerOrders";
 import SellerAddProduct       from "./pages/seller/SellerAddProduct";
 import ClosetPage             from "./pages/ClosetPage";
 import ClosetItemDetailsPage  from "./pages/ClosetItemDetailsPage";
+import BecomeSellerPage       from "./pages/BecomeSellerPage";
+import SellerProtectedRoute   from "./components/SellerProtectedRoute";
 
 export default function App() {
   return (
@@ -56,24 +59,26 @@ export default function App() {
           <Route path="/vault"          element={<Layout><VaultPage /></Layout>} />
           <Route path="/wishlist"       element={<Layout><WishlistPage /></Layout>} />
           <Route path="/cart"           element={<Layout><CartPage /></Layout>} />
-          <Route path="/checkout"       element={<Layout><CheckoutPage /></Layout>} />
+         <Route path="/checkout" element={<Layout><ProtectedRoute><CheckoutPage /></ProtectedRoute></Layout>} />
           <Route path="/orders"         element={<Layout><OrdersPage /></Layout>} />
           <Route path="/profile"        element={<Layout><ProfilePage /></Layout>} />
+          <Route path="/become-seller"  element={<Layout><BecomeSellerPage /></Layout>} />
 
           {/* ── CLOSET ── */}
           <Route path="/closet"         element={<Layout><ClosetPage /></Layout>} />
           <Route path="/closet/:id"     element={<Layout><ClosetItemDetailsPage /></Layout>} />
 
-          {/* ── SELLER PORTAL (static routes MUST come before /seller/:id) ── */}
-          <Route path="/seller/dashboard" element={<Layout><SellerDashboard /></Layout>} />
-          <Route path="/seller/products"  element={<Layout><SellerProducts /></Layout>} />
-          <Route path="/seller/orders"    element={<Layout><SellerOrders /></Layout>} />
-          <Route path="/seller/add"       element={<Layout><SellerAddProduct /></Layout>} />
-          {/* /sell/ aliases — used by internal dashboard links */}
-          <Route path="/sell/dashboard"   element={<Layout><SellerDashboard /></Layout>} />
-          <Route path="/sell/products"    element={<Layout><SellerProducts /></Layout>} />
-          <Route path="/sell/orders"      element={<Layout><SellerOrders /></Layout>} />
-          <Route path="/sell/add"         element={<Layout><SellerAddProduct /></Layout>} />
+          import ProtectedRoute from "./components/ProtectedRoute";
+
+    // Replace your seller routes with:
+         <Route path="/seller/dashboard" element={<Layout><SellerProtectedRoute><SellerDashboard /></SellerProtectedRoute></Layout>} />
+<Route path="/seller/products"  element={<Layout><SellerProtectedRoute><SellerProducts /></SellerProtectedRoute></Layout>} />
+<Route path="/seller/orders"    element={<Layout><SellerProtectedRoute><SellerOrders /></SellerProtectedRoute></Layout>} />
+<Route path="/seller/add"       element={<Layout><SellerProtectedRoute><SellerAddProduct /></SellerProtectedRoute></Layout>} />
+<Route path="/sell/dashboard"   element={<Layout><SellerProtectedRoute><SellerDashboard /></SellerProtectedRoute></Layout>} />
+<Route path="/sell/products"    element={<Layout><SellerProtectedRoute><SellerProducts /></SellerProtectedRoute></Layout>} />
+<Route path="/sell/orders"      element={<Layout><SellerProtectedRoute><SellerOrders /></SellerProtectedRoute></Layout>} />
+<Route path="/sell/add"         element={<Layout><SellerProtectedRoute><SellerAddProduct /></SellerProtectedRoute></Layout>} />
 
           {/* ── SELLER PROFILE (dynamic — must be last) ── */}
           <Route path="/seller/:id"     element={<Layout><SellerPage /></Layout>} />

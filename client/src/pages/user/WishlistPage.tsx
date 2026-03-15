@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Heart, ShoppingBag, Trash2, Grid3X3, LayoutList,
   Bell, BellOff, ChevronRight, ArrowLeft, TrendingDown,
 } from "lucide-react";
 import { PRODUCTS } from "../../data/products";
+import { supabase } from "../../lib/supabase";
 
 // ── Mock wishlist data ────────────────────────────────────────────────────
 const INITIAL_WISHLIST = PRODUCTS.slice(2, 14).map((p, i) => ({
@@ -33,14 +34,38 @@ export default function WishlistPage() {
   const [items, setItems]     = useState(INITIAL_WISHLIST);
   const [view, setView]       = useState<"grid" | "list">("grid");
   const [sort, setSort]       = useState<SortKey>("newest");
-  const [removing, setRem]    = useState<number | null>(null);
+  const [removing, setRemoving] = useState<number | null>(null);
   const [adding, setAdding]   = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth/login?redirect=/wishlist");
+        return;
+      }
+      setLoading(false);
+    };
+    checkAuth();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontFamily: "'Bebas Neue'", fontSize: 24, letterSpacing: 4, color: "var(--dim)" }}>
+          LOADING WISHLIST...
+        </div>
+      </div>
+    );
+  }
 
   const remove = (id: number) => {
-    setRem(id);
+    setRemoving(id);
     setTimeout(() => {
       setItems(prev => prev.filter(i => i.id !== id));
-      setRem(null);
+      setRemoving(null);
     }, 320);
   };
 

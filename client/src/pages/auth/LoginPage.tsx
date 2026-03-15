@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
 import { SHARED_CSS, AuthLeft, GoogleButton } from "./_shared";
 import { supabase } from "../../lib/supabase";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw]     = useState(false);
@@ -31,7 +32,8 @@ export default function LoginPage() {
       setLoading(false);
     } else {
       setAlert({ type: "success", msg: "Welcome back! Redirecting..." });
-      setTimeout(() => navigate("/vault"), 1000);
+      const redirect = searchParams.get('redirect');
+      setTimeout(() => navigate(redirect || "/vault"), 1000);
     }
   };
 

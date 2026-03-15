@@ -1,15 +1,70 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, Menu, X } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { supabase, type Profile } from "../lib/supabase";
 
 export default function Navbar() {
   const { pathname } = useLocation();
   const { itemCount } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const navigate = useNavigate();
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
   const closeMenu = () => setMenuOpen(false);
+
+  // Load user profile on mount
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        setUserProfile(profile);
+      }
+    };
+    loadUserProfile();
+  }, []);
+
+  const handleSellClick = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      // Not logged in -> redirect to login
+      navigate("/auth/login?redirect=/seller/dashboard");
+      return;
+    }
+
+    // User is logged in - check their role
+    if (!userProfile) {
+      // Profile not loaded yet, try to get it
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile?.role === 'seller') {
+        navigate("/seller/dashboard");
+      } else {
+        // Buyer or no profile -> redirect to become seller page
+        navigate("/become-seller");
+      }
+      return;
+    }
+
+    // Profile is loaded - check role
+    if (userProfile.role === 'seller') {
+      navigate("/seller/dashboard");
+    } else {
+      // Buyer -> redirect to become seller page
+      navigate("/become-seller");
+    }
+  };
 
   return (
     <>
@@ -219,7 +274,7 @@ export default function Navbar() {
               <span className="cv-nav-badge">{itemCount > 99 ? "99+" : itemCount}</span>
             )}
           </Link>
-          <Link to="/seller/dashboard" className="cv-nav-cta">Sell</Link>
+          <button onClick={handleSellClick} className="cv-nav-cta">Sell</button>
           <button className="cv-nav-burger" onClick={() => setMenuOpen(true)} aria-label="Open menu">
             <Menu size={22} />
           </button>
@@ -255,9 +310,9 @@ export default function Navbar() {
           <li><Link to="/cart"             className={isActive("/cart")             ? "nav-active" : ""} onClick={closeMenu}>Cart {itemCount > 0 && `(${itemCount})`}</Link></li>
         </ul>
 
-        <Link to="/seller/dashboard" className="cv-drawer-sell" onClick={closeMenu}>
+        <button onClick={() => { closeMenu(); handleSellClick(); }} className="cv-drawer-sell">
           Start Selling →
-        </Link>
+        </button>
       </nav>
     </>
   );

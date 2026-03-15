@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Heart, ShoppingBag, Trash2, Grid3X3, LayoutList,
   Clock, Plus, ChevronRight, Archive,
   TrendingUp, Eye
 } from "lucide-react";
 import { PRODUCTS } from "../../data/products";
+import { supabase } from "../../lib/supabase";
 
 const SAVED_ITEMS = PRODUCTS.slice(0, 8).map((p, i) => ({
   ...p,
@@ -34,12 +35,37 @@ const COLLECTIONS = [
 type Tab = "saved" | "wishlist" | "recent";
 
 export default function VaultPage() {
+  const navigate = useNavigate();
   const [tab, setTab]           = useState<Tab>("saved");
   const [view, setView]         = useState<"grid" | "list">("grid");
   const [saved, setSaved]       = useState(SAVED_ITEMS.map(i => i.id));
   const [wished, setWished]     = useState(WISHLIST_ITEMS.map(i => i.id));
   const [added, setAdded]       = useState<Record<number, boolean>>({});
   const [removing, setRemoving] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth/login?redirect=/vault");
+        return;
+      }
+      setLoading(false);
+    };
+    checkAuth();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontFamily: "'Bebas Neue'", fontSize: 24, letterSpacing: 4, color: "var(--dim)" }}>
+          LOADING VAULT...
+        </div>
+      </div>
+    );
+  }
 
   const removeFromVault = (id: number) => {
     setRemoving(id);

@@ -1,24 +1,17 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   User, Lock, MapPin, Ruler, Bell, Shield,
   Check, AlertCircle, Eye, EyeOff, Trash2, Plus,
   Camera, ChevronRight, Package, Heart, Archive,
   LogOut, CreditCard
 } from "lucide-react";
-
-// ── Mock user data ─────────────────────────────────────────────────────────
-const MOCK_USER = {
-  firstName: "Jordan", lastName: "Khumalo",
-  email: "jordan@closet.vault", username: "VaultKing_ZA",
-  phone: "+27 72 000 0000", joinedYear: "2024",
-  avatar: null as string | null,
-  orders: 12, saved: 34, reviews: 7,
-};
+import { supabase, type Profile } from "../../lib/supabase";
 
 const MOCK_ADDRESSES = [
   { id: 1, label: "Home", name: "Jordan Khumalo", line1: "123 Main Street", line2: "Unit 4B", city: "Johannesburg", province: "Gauteng", zip: "2000", country: "South Africa", isDefault: true },
   { id: 2, label: "Work", name: "Jordan Khumalo", line1: "456 Business Park", line2: "", city: "Sandton", province: "Gauteng", zip: "2196", country: "South Africa", isDefault: false },
+  { id: 3, label: "Billing", name: "Jordan Khumalo", line1: "789 Billing Street", line2: "", city: "Cape Town", province: "Western Cape", zip: "8000", country: "South Africa", isDefault: false },
 ];
 
 const SA_PROVINCES = ["Gauteng","Western Cape","KwaZulu-Natal","Eastern Cape","Limpopo","Mpumalanga","North West","Free State","Northern Cape"];
@@ -29,11 +22,89 @@ const BRANDS_LIST  = ["Nike","Adidas","Jordan","New Balance","Supreme","Off-Whit
 type SideTab = "profile" | "addresses" | "sizes" | "notifications" | "security" | "billing";
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const [activeTab, setTab]     = useState<SideTab>("profile");
+  const [loading, setLoading]   = useState(true);
+  const [profile, setProfile]   = useState<Profile | null>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
 
-  // profile form
-  const [profile, setProfile]   = useState({ ...MOCK_USER });
+  // Load user data on component mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate("/auth/login");
+          return;
+        }
+
+        setUserEmail(user.email || "");
+        
+        // Fetch profile data
+        const { data: profileData, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (error) throw error;
+        setProfile(profileData);
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [navigate]);
+
+  // Logout function
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
+  // Profile update state
+  const [profileForm, setProfileForm] = useState({
+    full_name: "",
+    username: ""
+  });
   const [profileSaved, setPS]   = useState(false);
+
+  // Update profile form when profile loads
+  useEffect(() => {
+    if (profile) {
+      setProfileForm({
+        full_name: profile.full_name || "",
+        username: profile.username || ""
+      });
+    }
+  }, [profile]);
+
+  // Update profile function
+  const updateProfile = async () => {
+    if (!profile) return;
+    
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: profileForm.full_name,
+          username: profileForm.username
+        })
+        .eq("id", profile.id);
+
+      if (error) throw error;
+      
+      // Update local state
+      setProfile(prev => prev ? { ...prev, full_name: profileForm.full_name, username: profileForm.username } : null);
+      setPS(true);
+      setTimeout(() => setPS(false), 2000);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
 
   // password form
   const [pwForm, setPw]         = useState({ current: "", next: "", confirm: "" });
@@ -64,7 +135,7 @@ export default function ProfilePage() {
   const toggleBrand = (b: string) =>
     setFavBrands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]);
 
-  const saveProfile = () => { setPS(true); setTimeout(() => setPS(false), 2000); };
+  const saveProfile = updateProfile;
   const saveSizes   = () => { setSizesSaved(true); setTimeout(() => setSizesSaved(false), 2000); };
   const saveNotifs  = () => { setNotifSaved(true); setTimeout(() => setNotifSaved(false), 2000); };
 
@@ -106,6 +177,16 @@ export default function ProfilePage() {
     { id: "security",      label: "Security",       icon: <Shield size={14} /> },
     { id: "billing",       label: "Billing",        icon: <CreditCard size={14} /> },
   ];
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontFamily: "'Bebas Neue'", fontSize: 24, letterSpacing: 4, color: "var(--dim)" }}>
+          LOADING PROFILE...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -493,22 +574,24 @@ export default function ProfilePage() {
         <div className="prof-hero">
           <div className="prof-avatar-wrap">
             <div className="prof-avatar">
-              {profile.avatar
-                ? <img src={profile.avatar} alt="avatar" />
-                : profile.firstName[0] + profile.lastName[0]
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} alt="avatar" />
+                : profile?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'
               }
             </div>
             <div className="prof-avatar-edit"><Camera size={11} color="#f5f5f0" /></div>
           </div>
           <div className="prof-hero-info">
             <div className="prof-hero-name">
-              {profile.firstName} <span>{profile.lastName}</span>
+              {profile?.full_name || 'User'}
             </div>
-            <div className="prof-hero-handle">@{profile.username} · Member since {profile.joinedYear}</div>
+            <div className="prof-hero-handle">
+              @{profile?.username || 'username'} · Member since {new Date(profile?.created_at || '').getFullYear()} · {profile?.role}
+            </div>
             <div className="prof-hero-stats">
-              <div className="prof-hero-stat"><Package size={12} /><strong>{profile.orders}</strong> Orders</div>
-              <div className="prof-hero-stat"><Archive size={12} /><strong>{profile.saved}</strong> Saved</div>
-              <div className="prof-hero-stat"><Heart size={12} /><strong>{profile.reviews}</strong> Reviews</div>
+              <div className="prof-hero-stat"><Package size={12} /><strong>Orders</strong></div>
+              <div className="prof-hero-stat"><Archive size={12} /><strong>Saved</strong></div>
+              <div className="prof-hero-stat"><Heart size={12} /><strong>Reviews</strong></div>
             </div>
           </div>
           {/* quick links */}
@@ -516,6 +599,9 @@ export default function ProfilePage() {
             <div className="prof-quick">
               <Link to="/vault"  className="pq-link"><Archive size={12} /> My Vault <ChevronRight size={11} /></Link>
               <Link to="/orders" className="pq-link"><Package size={12} /> Orders <ChevronRight size={11} /></Link>
+              {profile?.role === 'seller' && (
+                <Link to="/seller/dashboard" className="pq-link"><User size={12} /> Seller Dashboard <ChevronRight size={11} /></Link>
+              )}
             </div>
           </div>
         </div>
@@ -535,7 +621,7 @@ export default function ProfilePage() {
               </button>
             ))}
             <hr className="prof-nav-divider" />
-            <button className="prof-nav-logout">
+            <button className="prof-nav-logout" onClick={handleLogout}>
               <LogOut size={14} /> Sign Out
             </button>
           </aside>
@@ -556,29 +642,22 @@ export default function ProfilePage() {
                   <div className="prof-card-body">
                     <div className="pf-row">
                       <div className="pf-field">
-                        <label className="pf-label">First Name</label>
-                        <input className="pf-input" value={profile.firstName}
-                          onChange={e => setProfile(p => ({ ...p, firstName: e.target.value }))} />
-                      </div>
-                      <div className="pf-field">
-                        <label className="pf-label">Last Name</label>
-                        <input className="pf-input" value={profile.lastName}
-                          onChange={e => setProfile(p => ({ ...p, lastName: e.target.value }))} />
+                        <label className="pf-label">Full Name</label>
+                        <input className="pf-input" value={profileForm.full_name}
+                          onChange={e => setProfileForm(f => ({ ...f, full_name: e.target.value }))} />
                       </div>
                       <div className="pf-field">
                         <label className="pf-label">Username</label>
-                        <input className="pf-input" value={profile.username}
-                          onChange={e => setProfile(p => ({ ...p, username: e.target.value }))} />
+                        <input className="pf-input" value={profileForm.username}
+                          onChange={e => setProfileForm(f => ({ ...f, username: e.target.value }))} />
                       </div>
                       <div className="pf-field">
-                        <label className="pf-label">Phone</label>
-                        <input className="pf-input" value={profile.phone}
-                          onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))} />
+                        <label className="pf-label">Email</label>
+                        <input className="pf-input" value={userEmail} disabled style={{ opacity: 0.6 }} />
                       </div>
-                      <div className="pf-field full">
-                        <label className="pf-label">Email Address</label>
-                        <input className="pf-input" type="email" value={profile.email}
-                          onChange={e => setProfile(p => ({ ...p, email: e.target.value }))} />
+                      <div className="pf-field">
+                        <label className="pf-label">Account Type</label>
+                        <input className="pf-input" value={profile?.role || 'buyer'} disabled style={{ opacity: 0.6, textTransform: 'capitalize' }} />
                       </div>
                     </div>
                     <div className="pf-save-row">

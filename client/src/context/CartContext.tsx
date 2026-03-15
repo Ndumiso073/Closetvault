@@ -5,7 +5,7 @@ import type { Product } from "../data/products";
 // ── Types ─────────────────────────────────────────────────────────────────
 export interface CartItem {
   cartId: string;   // unique per cart line (productId + size)
-  product: Product;
+  product: Product & { original_price?: number | null };
   size: string;
   qty: number;
 }

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, Plus, Minus, ShoppingBag, ChevronRight, Tag, Shield, Truck, RotateCcw, ArrowLeft } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, ChevronRight, Tag, Shield, Truck, RotateCcw, ArrowLeft, Lock } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { supabase } from "../../lib/supabase";
 
 const SHIPPING_OPTIONS = [
   { id: "std",  label: "Standard (3–5 days)", price: 0   },
@@ -12,6 +13,18 @@ const SHIPPING_OPTIONS = [
 export default function CartPage() {
   const navigate = useNavigate();
   const { items, removeFromCart, updateQty } = useCart();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+      setLoading(false);
+    };
+    checkAuth();
+  }, []);
 
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromo]  = useState(false);
@@ -35,11 +48,30 @@ export default function CartPage() {
     }
   };
 
+  const handleCheckout = () => {
+    if (isAuthenticated) {
+      navigate("/checkout");
+    } else {
+      // Redirect to login with checkout redirect
+      navigate("/auth/login?redirect=/checkout");
+    }
+  };
+
   const subtotal     = items.reduce((s, i) => s + i.product.price * i.qty, 0);
   const discount     = promoApplied ? Math.round(subtotal * 0.1) : 0;
   const shippingCost = SHIPPING_OPTIONS.find(o => o.id === shipping)?.price ?? 0;
   const total        = subtotal - discount + shippingCost;
   const itemCount    = items.reduce((s, i) => s + i.qty, 0);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontFamily: "'Bebas Neue'", fontSize: 24, letterSpacing: 4, color: "var(--dim)" }}>
+          LOADING CART...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -632,12 +664,33 @@ export default function CartPage() {
               <button
                 className="cs-checkout"
                 disabled={items.length === 0}
-                onClick={() => navigate("/checkout")}
+                onClick={handleCheckout}
               >
                 <ShoppingBag size={15} />
-                Proceed to Checkout
+                {isAuthenticated ? "Proceed to Checkout" : "Login to Checkout"}
                 <ChevronRight size={14} />
               </button>
+
+              {/* Guest messaging */}
+              {!isAuthenticated && items.length > 0 && (
+                <div style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  marginBottom: "16px",
+                  fontSize: "13px",
+                  color: "var(--dim)",
+                  lineHeight: "1.5",
+                  textAlign: "center"
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
+                    <Lock size={14} />
+                    <strong style={{ color: "var(--white)" }}>Secure Checkout</strong>
+                  </div>
+                  Login to complete your purchase. Your cart items will be saved during checkout.
+                </div>
+              )}
 
               {/* TRUST */}
               <div className="cs-trust">
